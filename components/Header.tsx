@@ -1,51 +1,69 @@
 "use client";
-import { GithubInfo, handleurl } from "@/lib/getDetails";
-import React, { useReducer, useState } from "react";
 
-const Header = () => {
-  const [repoDetails, setRepoDetails] = useState<GithubInfo | null>(null);
+import { GithubInfo } from "@/lib/getDetails";
+import React, { useState } from "react";
+
+type Props = {
+  setInputUrl: (url: string) => void;
+  repos?: GithubInfo | null;
+};
+
+const Header = ({ setInputUrl, repos }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formdata: FormData) {
     setError(null);
     const urlAdress = formdata.get("link") as string;
-    if (!urlAdress) return;
 
-    const result = handleurl(urlAdress);
-    if (result) {
-      setRepoDetails(result);
-    } else {
-      setRepoDetails(null);
-      setError("Please enter a valid GitHub repository URL");
+    if (!urlAdress?.trim()) {
+      setError("Please provide a repository link");
+      return;
     }
+
+    setInputUrl(urlAdress);
   }
 
   return (
-    <header className="w-full bg-white border-b border-zinc-200 h-20 px-8 flex items-center justify-between">
-      {/* Left side: Search Form */}
+    <header className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 shadow-md h-20 px-8 flex items-center justify-between border-b-2 border-orange-700">
+      {" "}
+      {/* Left side: Search Form Container */}
       <div className="w-full max-w-xl">
-        <form action={handleSubmit} className="relative flex items-center">
+        <form
+          action={handleSubmit}
+          className="relative flex items-center group"
+        >
           <input
             type="text"
             name="link"
-            placeholder="Enter GitHub repository URL..."
-            className="w-full h-10 bg-zinc-50 rounded-xl pl-4 pr-20 text-sm border border-zinc-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-zinc-900"
+            placeholder="⚡ Paste GitHub repository URL here..."
+            className="w-full h-11 bg-white/95 rounded-xl pl-4 pr-24 text-sm font-medium border border-transparent shadow-inner focus:outline-none focus:bg-white text-zinc-900 placeholder-zinc-400 transition-all focus:ring-2 focus:ring-white/50"
           />
           <button
             type="submit"
-            className="absolute right-1.5 h-7 px-4 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium rounded-lg transition-colors"
+            className="absolute right-1.5 h-8 px-5 bg-zinc-900 hover:bg-zinc-800 text-orange-400 text-xs font-bold rounded-lg transition-transform active:scale-95 shadow cursor-pointer"
           >
             Analyze
           </button>
         </form>
-        {error && <p className="text-xs text-red-500 mt-1 absolute">{error}</p>}
+        {error && (
+          <p className="text-xs text-yellow-200 drop-shadow font-semibold mt-1 absolute bg-orange-700/80 px-2 py-0.5 rounded">
+            {error}
+          </p>
+        )}
       </div>
-
-      {/* Right side: Real-time Data Display Indicator */}
-      {repoDetails && (
-        <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-lg">
-          <span className="text-xs font-medium text-blue-700">
-            {repoDetails.username} / {repoDetails.repo}
+      {/* Right side: Repository Status Badge */}
+      {repos?.username && repos?.repo ? (
+        <div className="flex items-center gap-2 bg-zinc-900/90 border border-orange-400/30 px-4 py-2 rounded-xl shadow-md animate-fade-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs font-bold text-zinc-100 tracking-wide">
+            {repos.username} <span className="text-orange-400">/</span>{" "}
+            {repos.repo}
+          </span>
+        </div>
+      ) : (
+        <div className="hidden sm:flex items-center bg-white/10 px-4 py-2 rounded-xl border border-white/10">
+          <span className="text-xs font-medium text-orange-50 text-opacity-80">
+            Ready to scan workspace
           </span>
         </div>
       )}

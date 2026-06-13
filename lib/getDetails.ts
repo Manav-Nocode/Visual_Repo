@@ -1,7 +1,10 @@
 // example = "https://api.github.com/repos/666ghj/MiroFish/contents"
 // https://github.com/666ghj/MiroFish
 
+import { repoDetailedTypes } from "./manageRepo";
+
 export interface GithubInfo {
+  data?: repoDetailedTypes[];
   username: string;
   repo: string;
 }
@@ -28,4 +31,31 @@ export function handleurl(url: string): GithubInfo | null {
     username: part[0],
     repo: part[1],
   };
+}
+
+// https://api.github.com/repos/666ghj/MiroFish/contents
+
+export async function apiRepoDetails(inputurl: string) {
+  const info = handleurl(inputurl);
+  if (!info) {
+    console.log("cannot fetch details. Invalid url");
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${info.username}/${info.repo}/contents`,
+    );
+    if (!response.ok) throw new Error("Api error");
+    const data = await response.json();
+    const result: GithubInfo = {
+      data,
+      username: info.username,
+      repo: info.repo,
+    };
+    return result;
+  } catch (Err) {
+    console.log(Err);
+    return null;
+  }
 }
